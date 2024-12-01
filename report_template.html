@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ project_name }} - Отчет о результатах статического анализа кода</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        header h1 {
+            font-size: 2.5em;
+            margin: 0;
+        }
+        header h2 {
+            color: gray;
+            margin-top: 10px;
+        }
+        .chapter {
+            margin-bottom: 50px;
+        }
+        .chapter h2 {
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 10px;
+        }
+        .user-summary {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 40px;
+        }
+        .user-block {
+            width: 45%;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .user-block img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            float: left;
+            margin-right: 10px;
+        }
+        .stars {
+            color: gold;
+            margin: 5px 0;
+        }
+        .stars span {
+            font-size: 1.2em;
+        }
+        .project-summary table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        .project-summary th, .project-summary td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        .project-summary th {
+            background-color: #f2f2f2;
+        }
+        .component {
+            margin-bottom: 30px;
+        }
+        .component-header {
+            cursor: pointer;
+            background-color: #f9f9f9;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .component-header h3 {
+            margin: 0;
+        }
+        .component-marker {
+            font-size: 1.2em;
+            color: gray;
+        }
+        .component .details {
+            display: none;
+            margin-top: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+        }
+        .component table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .component th, .component td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        .component th {
+            background-color: #f2f2f2;
+        }
+        footer {
+            margin-top: 50px;
+            text-align: center;
+            color: gray;
+        }
+        footer p {
+            margin: 5px;
+        }
+    </style>
+    <script>
+        function toggleDetails(componentId) {
+            const details = document.getElementById(componentId);
+            const marker = document.getElementById(componentId + '-marker');
+            if (details.style.display === "block") {
+                details.style.display = "none";
+                marker.textContent = "▶";
+            } else {
+                details.style.display = "block";
+                marker.textContent = "▼";
+            }
+        }
+    </script>
+</head>
+<body>
+    <header>
+        <h1>{{ project_name }}</h1>
+        <h2>Отчет о результатах статического анализа кода</h2>
+    </header>
+
+    <!-- Chapter: Project Overview -->
+    <div class="chapter">
+        <h2>Общая информация о проекте</h2>
+        <div class="user-summary">
+            <div class="user-block">
+                <img src="fowler.jpg" alt="Аватар архитектора">
+                <h3>Martin Fowler (архитектор)</h3>
+                <div>{{ architect.review | safe }}</div>
+                <div class="stars">
+                    <strong>Оценка проекта:</strong>
+                    {% for star in range(architect.evaluation) %}
+                    ★
+                    {% endfor %}
+                    {% for star in range(5 - architect.evaluation) %}
+                    ☆
+                    {% endfor %}
+                    ({{ architect.evaluation }} из 5)
+                </div>
+            </div>
+            <div class="user-block">
+                <img src="pepe.jpg" alt="Аватар разработчика">
+                <h3>Пепе (разработчик)</h3>
+                <div>{{ developer.review | safe }}</div>
+                <div class="stars">
+                    <strong>Оценка проекта:</strong>
+                    {% for star in range(developer.evaluation) %}
+                    ★
+                    {% endfor %}
+                    {% for star in range(5 - developer.evaluation) %}
+                    ☆
+                    {% endfor %}
+                    ({{ developer.evaluation }} из 5)
+                </div>
+            </div>
+        </div>
+
+        <div class="project-summary">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Название метрики</th>
+                        <th>Значение</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for metric_name, metric_value in project_summary.items() %}
+                    <tr>
+                        <td>{{ metric_name }}</td>
+                        <td>{{ metric_value }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="project-summary">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Проблема</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for issue in project_issues %}
+                    <tr>
+                        <td>{{ issue }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Chapter: Component Overview -->
+    <div class="chapter">
+        <h2>Обзор компонентов</h2>
+        {% for component in components %}
+        <div class="component">
+            <div class="component-header" onclick="toggleDetails('component-{{ loop.index }}')">
+                <h3>{{ component.name }}</h3>
+                <span class="component-summary">{{ component.summary }}</span>
+                <span id="component-{{ loop.index }}-marker" class="component-marker">▶</span>
+            </div>
+            <div id="component-{{ loop.index }}" class="details">
+                <p><strong>Описание:</strong> {{ component.summary }}</p>
+                <p><strong>Технологический стек:</strong> {{ component.stack }}</p>
+                <p><strong>Используемые архитектурные паттерны:</strong> {{ component.patterns }}</p>
+                <h4>Диаграмма структуры</h4>
+                <img src="data:image/png;base64,{{ component.structure_diagram }}" alt="UML Диаграмма">
+                <h4>Проблемы компонента</h4>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Проблема</th>
+                            <th>Детали</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for issue, details in component.issues.items() %}
+                        <tr>
+                            <td>{{ issue }}</td>
+                            <td>{{ details }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <footer>
+        <p>Евраз Хакатон</p>
+        <p>Insightstream 2024</p>
+    </footer>
+</body>
+</html>

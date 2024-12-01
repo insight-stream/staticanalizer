@@ -1,0 +1,15 @@
+__pycache__
+
+*.pyc
+*.pyo
+*.pyd
+
+*.ipynb
+
+*.log
+.venv
+.env
+
+.DS_Store
+Готовые проекты/
+test_projects/
